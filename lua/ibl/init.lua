@@ -161,7 +161,7 @@ M.refresh = function(bufnr)
     end
 
     for _, fn in
-        pairs(hooks.get(bufnr, hooks.type.ACTIVE) --[[ @as ibl.hooks.cb.active[] ]])
+        pairs(hooks.get(bufnr, hooks.type.ACTIVE) --[=[@as ibl.hooks.cb.active[]]=])
     do
         if not fn(bufnr) then
             clear_buffer(bufnr)
@@ -178,7 +178,7 @@ M.refresh = function(bufnr)
 
     local scope_disabled = false
     for _, fn in
-        pairs(hooks.get(bufnr, hooks.type.SCOPE_ACTIVE) --[[ @as ibl.hooks.cb.scope_active[] ]])
+        pairs(hooks.get(bufnr, hooks.type.SCOPE_ACTIVE) --[=[@as ibl.hooks.cb.scope_active[]]=])
     do
         if not fn(bufnr) then
             scope_disabled = true
@@ -226,7 +226,7 @@ M.refresh = function(bufnr)
     local current_indent_enabled = utils.is_current_indent_active(bufnr, config)
 
     for _, fn in
-        pairs(hooks.get(bufnr, hooks.type.CURRENT_INDENT_ACTIVE) --[[ @as ibl.hooks.cb.current_indent_active[] ]])
+        pairs(hooks.get(bufnr, hooks.type.CURRENT_INDENT_ACTIVE) --[=[@as ibl.hooks.cb.current_indent_active[]]=])
     do
         if not fn(bufnr) then
             current_indent_enabled = false
@@ -382,7 +382,7 @@ M.refresh = function(bufnr)
         end
 
         for _, fn in
-            pairs(hooks.get(bufnr, hooks.type.WHITESPACE) --[[ @as ibl.hooks.cb.whitespace[] ]])
+            pairs(hooks.get(bufnr, hooks.type.WHITESPACE) --[=[@as ibl.hooks.cb.whitespace[]]=])
         do
             whitespace_tbl = fn(buffer_state.tick, bufnr, row - 1, whitespace_tbl)
         end
@@ -404,10 +404,10 @@ M.refresh = function(bufnr)
             current_indent_col_start_single = #current_indent_whitespace_tbl
 
             for j = indent_state and #indent_state.stack or 0, 1, -1 do
-                if indent_state.stack[j].indent < current_indent_col_start_single then
+                current_indent.start_row = indent_state.stack[j].row + 1
+                if indent_state.stack[j].indent <= current_indent_col_start_single then
                     break
                 end
-                current_indent.start_row = indent_state.stack[j].row + 1
             end
             if current_indent.start_row > row then
                 current_indent.start_row = math.huge
@@ -426,7 +426,7 @@ M.refresh = function(bufnr)
     end
 
     for _, fn in
-        pairs(hooks.get(bufnr, hooks.type.CURRENT_INDENT_HIGHLIGHT) --[[ @as ibl.hooks.cb.current_indent_highlight[] ]])
+        pairs(hooks.get(bufnr, hooks.type.CURRENT_INDENT_HIGHLIGHT) --[=[@as ibl.hooks.cb.current_indent_highlight[]]=])
     do
         current_indent_index = fn(buffer_state.tick, bufnr, current_indent, current_indent_index)
     end
@@ -456,7 +456,7 @@ M.refresh = function(bufnr)
                 return indent.is_indent(w)
             end, whitespace_tbl) + 1
             for _, fn in
-                pairs(hooks.get(bufnr, hooks.type.SCOPE_HIGHLIGHT) --[[ @as ibl.hooks.cb.scope_highlight[] ]])
+                pairs(hooks.get(bufnr, hooks.type.SCOPE_HIGHLIGHT) --[=[@as ibl.hooks.cb.scope_highlight[]]=])
             do
                 scope_index = fn(buffer_state.tick, bufnr, scope, scope_index)
             end
@@ -570,7 +570,7 @@ M.refresh = function(bufnr)
                 and config.scope.priority >= config.current_indent.priority
             )
         then
-            vim.api.nvim_buf_set_extmark(bufnr, namespace, row - 1, current_indent_col_start_single, {
+            vim.api.nvim_buf_set_extmark(bufnr, namespace, row - 1, #whitespace, {
                 end_col = #line,
                 hl_group = current_indent_hl.underline,
                 priority = config.current_indent.priority,
@@ -580,7 +580,7 @@ M.refresh = function(bufnr)
         end
 
         for _, fn in
-            pairs(hooks.get(bufnr, hooks.type.VIRTUAL_TEXT) --[[ @as ibl.hooks.cb.virtual_text[] ]])
+            pairs(hooks.get(bufnr, hooks.type.VIRTUAL_TEXT) --[=[@as ibl.hooks.cb.virtual_text[]]=])
         do
             virt_text = fn(buffer_state.tick, bufnr, row - 1, virt_text)
         end
