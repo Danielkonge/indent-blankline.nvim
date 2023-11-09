@@ -261,7 +261,12 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
     local end_pos_col
 
     if end_line[1] then
-        end_pos = vim.inspect_pos(bufnr, end_row, end_line[1]:find "%S" - 1, {
+        local end_pos_find = #end_line[1] - 1
+        local try_find = end_line[1]:find "%S"
+        if try_find then
+            end_pos_find = try_find - 1
+        end
+        end_pos = vim.inspect_pos(bufnr, end_row, end_pos_find, {
             extmarks = true,
             syntax = false,
             treesitter = false,

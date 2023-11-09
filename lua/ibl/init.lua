@@ -325,7 +325,7 @@ M.refresh = function(bufnr)
             whitespace_tbl = next_whitespace_tbl
         else
             if i == #lines then
-                whitespace_tbl = {}
+                whitespace_tbl, indent_state = indent.get(whitespace, indent_opts, indent_state, row)
             else
                 local j = i + 1
                 while j < #lines and (lines[j]:len() == 0 or line_skipped[j]) do
@@ -441,9 +441,9 @@ M.refresh = function(bufnr)
         local whitespace, whitespace_tbl = unpack(calc_data[i])
 
         local is_current_indent_active = row >= current_indent.start_row
-            and row <= (current_indent.end_row or #lines + offset)
-        local is_current_indent_start = row + 1 == (current_indent.start_row or -1)
-        local is_current_indent_end = row == (current_indent.end_row or -1)
+            and row <= current_indent.end_row
+        local is_current_indent_start = row + 1 == current_indent.start_row
+        local is_current_indent_end = row == current_indent.end_row
 
         local is_scope_active = row >= scope_row_start and row <= scope_row_end
         local is_scope_start = row == scope_row_start
