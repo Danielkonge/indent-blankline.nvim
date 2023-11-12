@@ -561,6 +561,7 @@ M.refresh = function(bufnr)
             current_indent_enabled
             and config.current_indent.show_end
             and is_current_indent_end
+            and current_indent.start_row <= row
             and #whitespace_tbl > current_indent_col_start_single
             and not (
                 config.scope.enabled
