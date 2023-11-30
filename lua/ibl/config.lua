@@ -344,7 +344,7 @@ end
 ---@return ibl.config.full
 M.overwrite_config = function(config)
     validate_config(config)
-    M.config = merge_configs("overwrite", M.default_config, config)
+    M.config = merge_configs("overwrite", M.config or M.default_config, config)
 
     return M.config
 end
