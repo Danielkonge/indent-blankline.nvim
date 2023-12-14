@@ -17,7 +17,7 @@ M.setup = function()
         "CompleteChanged",
         "FileChangedShellPost",
         "FileType",
-        "TextChanged",
+        "CursorMovedI",
         "TextChangedI",
     }, {
         group = group,
