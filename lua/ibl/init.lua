@@ -117,7 +117,7 @@ local debounced_refresh = setmetatable({
             self.timers[bufnr] = uv.new_timer()
         end
         if uv.timer_get_due_in(self.timers[bufnr]) <= 50 then
-            M.refresh(bufnr)
+            self.queued_buffers[bufnr] = nil
 
             local config = conf.get_config(bufnr)
             self.timers[bufnr]:start(config.debounce, 0, function()
@@ -126,6 +126,8 @@ local debounced_refresh = setmetatable({
                     vim.schedule_wrap(M.refresh)(bufnr)
                 end
             end)
+
+            M.refresh(bufnr)
         else
             self.queued_buffers[bufnr] = true
         end
@@ -391,7 +393,7 @@ M.refresh = function(bufnr)
 
         --- current indent
         if current_indent_enabled and row == lnum then
-            local current_indent_whitespace_tbl = vim.tbl_extend("keep", {}, whitespace_tbl)
+            local current_indent_whitespace_tbl = utils.quickclone(whitespace_tbl) -- vim.tbl_extend("keep", {}, whitespace_tbl)
 
             while #current_indent_whitespace_tbl > 0 do
                 if indent.is_indent(current_indent_whitespace_tbl[#current_indent_whitespace_tbl]) then
@@ -413,7 +415,7 @@ M.refresh = function(bufnr)
                 current_indent.start_row = math.huge
             end
 
-            current_indent_index = #vim.tbl_filter(function(w)
+            current_indent_index = #utils.tbl_filter(function(w)
                 return indent.is_indent(w)
             end, current_indent_whitespace_tbl) + 1
         end
@@ -452,7 +454,7 @@ M.refresh = function(bufnr)
         if is_scope_start and scope then
             scope_col_start = #whitespace
             scope_col_start_single = #whitespace_tbl
-            scope_index = #vim.tbl_filter(function(w)
+            scope_index = #utils.tbl_filter(function(w)
                 return indent.is_indent(w)
             end, whitespace_tbl) + 1
             for _, fn in

@@ -47,7 +47,7 @@ M.get = function(whitespace, opts, indent_state, row)
         indent_cap = indent_state.stack[1] and indent_state.stack[1].indent or 0
         indent_state.cap = false
     end
-    local varts = vim.tbl_map(tonumber, vim.split(vartabstop, ",", { trimempty = true }))
+    local varts = utils.tbl_map(tonumber, vim.split(vartabstop, ",", { trimempty = true }))
     if shiftwidth == 0 then
         shiftwidth = tabstop
     end
@@ -104,7 +104,7 @@ M.get = function(whitespace, opts, indent_state, row)
     end
 
     local indent = spaces + tabs
-    indent_state.stack = vim.tbl_filter(function(a)
+    indent_state.stack = utils.tbl_filter(function(a)
         return a.indent < indent
     end, indent_state.stack)
     table.insert(indent_state.stack, { indent = indent, row = row })
@@ -116,14 +116,14 @@ end
 ---
 ---@param whitespace ibl.indent.whitespace
 M.is_indent = function(whitespace)
-    return vim.tbl_contains({ M.whitespace.INDENT, M.whitespace.TAB_START, M.whitespace.TAB_START_SINGLE }, whitespace)
+    return utils.tbl_contains({ M.whitespace.INDENT, M.whitespace.TAB_START, M.whitespace.TAB_START_SINGLE }, whitespace)
 end
 
 --- Returns true if the passed whitespace belongs to space indent
 ---
 ---@param whitespace ibl.indent.whitespace
 M.is_space_indent = function(whitespace)
-    return vim.tbl_contains({ M.whitespace.INDENT, M.whitespace.SPACE }, whitespace)
+    return utils.tbl_contains({ M.whitespace.INDENT, M.whitespace.SPACE }, whitespace)
 end
 
 return M
