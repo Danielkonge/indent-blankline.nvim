@@ -189,10 +189,13 @@ M.refresh = function(bufnr)
     end
 
     local scope
+    local scope_start_line
     if not scope_disabled and config.scope.enabled then
         scope = scp.get(bufnr, config)
         if scope and scope:start() >= 0 then
-            offset = top_offset - math.min(top_offset - math.min(offset, scope:start()), config.viewport_buffer.max)
+            local scope_start = scope:start()
+            offset = top_offset - math.min(top_offset - math.min(offset, scope_start), config.viewport_buffer.max)
+            scope_start_line = vim.api.nvim_buf_get_lines(bufnr, scope_start, scope_start + 1, false)
         end
     end
 
@@ -433,6 +436,34 @@ M.refresh = function(bufnr)
         current_indent_index = fn(buffer_state.tick, bufnr, current_indent, current_indent_index)
     end
 
+    if scope and scope_start_line then
+        local whitespace = utils.get_whitespace(scope_start_line[1])
+        local whitespace_tbl, _ = indent.get(whitespace, indent_opts, indent_state, scope_row_start)
+
+        local current_left_offset = left_offset
+        while #whitespace_tbl > 0 and current_left_offset > 0 do
+            table.remove(whitespace_tbl, 1)
+            current_left_offset = current_left_offset - 1
+        end
+
+        for _, fn in
+            pairs(hooks.get(bufnr, hooks.type.WHITESPACE) --[=[@as ibl.hooks.cb.whitespace[]]=])
+        do
+            whitespace_tbl = fn(buffer_state.tick, bufnr, scope_row_start - 1, whitespace_tbl)
+        end
+
+        scope_col_start = #whitespace
+        scope_col_start_single = #whitespace_tbl
+        scope_index = #utils.tbl_filter(function(w)
+            return indent.is_indent(w)
+        end, whitespace_tbl) + 1
+        for _, fn in
+            pairs(hooks.get(bufnr, hooks.type.SCOPE_HIGHLIGHT) --[=[@as ibl.hooks.cb.scope_highlight[]]=])
+        do
+            scope_index = fn(buffer_state.tick, bufnr, scope, scope_index)
+        end
+    end
+
     --- Draw loop ---
     for i, line in ipairs(lines) do
         local row = i + offset
@@ -450,19 +481,6 @@ M.refresh = function(bufnr)
         local is_scope_active = row >= scope_row_start and row <= scope_row_end
         local is_scope_start = row == scope_row_start
         local is_scope_end = row == scope_row_end
-
-        if is_scope_start and scope then
-            scope_col_start = #whitespace
-            scope_col_start_single = #whitespace_tbl
-            scope_index = #utils.tbl_filter(function(w)
-                return indent.is_indent(w)
-            end, whitespace_tbl) + 1
-            for _, fn in
-                pairs(hooks.get(bufnr, hooks.type.SCOPE_HIGHLIGHT) --[=[@as ibl.hooks.cb.scope_highlight[]]=])
-            do
-                scope_index = fn(buffer_state.tick, bufnr, scope, scope_index)
-            end
-        end
 
         local blankline = line:len() == 0
         local whitespace_only = not blankline and line == whitespace
