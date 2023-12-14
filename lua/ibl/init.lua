@@ -190,12 +190,15 @@ M.refresh = function(bufnr)
 
     local scope
     local scope_start_line
+    local scope_end_line
     if not scope_disabled and config.scope.enabled then
         scope = scp.get(bufnr, config)
         if scope and scope:start() >= 0 then
             local scope_start = scope:start()
+            local scope_end = scope:end_()
             offset = top_offset - math.min(top_offset - math.min(offset, scope_start), config.viewport_buffer.max)
             scope_start_line = vim.api.nvim_buf_get_lines(bufnr, scope_start, scope_start + 1, false)
+            scope_end_line = vim.api.nvim_buf_get_lines(bufnr, scope_end, scope_end + 1, false)
         end
     end
 
@@ -437,8 +440,18 @@ M.refresh = function(bufnr)
     end
 
     if scope and scope_start_line then
-        local whitespace = utils.get_whitespace(scope_start_line[1])
-        local whitespace_tbl, _ = indent.get(whitespace, indent_opts, indent_state, scope_row_start)
+        local whitespace_start = utils.get_whitespace(scope_start_line[1])
+        local whitespace_end = utils.get_whitespace(scope_end_line[1])
+        local whitespace_tbl_start, _ = indent.get(whitespace_start, indent_opts, indent_state, scope_row_start)
+        local whitespace_tbl_end, _ = indent.get(whitespace_end, indent_opts, indent_state, scope_row_end)
+        local whitespace, whitespace_tbl
+        if #whitespace_tbl_end < #whitespace_tbl_start then
+            whitespace = whitespace_end
+            whitespace_tbl = whitespace_tbl_end
+        else
+            whitespace = whitespace_start
+            whitespace_tbl = whitespace_tbl_start
+        end
 
         local current_left_offset = left_offset
         while #whitespace_tbl > 0 and current_left_offset > 0 do
