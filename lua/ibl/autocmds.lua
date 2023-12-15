@@ -13,11 +13,12 @@ M.setup = function()
     })
     vim.api.nvim_create_autocmd({
         "CursorMoved",
+        "CursorMovedI",
         "BufWinEnter",
         "CompleteChanged",
         "FileChangedShellPost",
         "FileType",
-        "CursorMovedI",
+        "TextChanged",
         "TextChangedI",
     }, {
         group = group,
