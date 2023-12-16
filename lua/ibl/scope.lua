@@ -34,8 +34,9 @@ end
 
 ---@param bufnr number
 ---@param config ibl.config.full
+---@param buffer_state { scope: TSNode?, left_offset: number, top_offset: number, tick: number }?
 ---@return TSNode?
-M.get = function(bufnr, config)
+M.get = function(bufnr, config, buffer_state)
     local lang_tree_ok, lang_tree = pcall(vim.treesitter.get_parser, bufnr)
     if not lang_tree_ok or not lang_tree then
         return nil
@@ -66,6 +67,13 @@ M.get = function(bufnr, config)
     local node = lang_tree:named_node_for_range(range, { bufnr = bufnr })
     if not node then
         return nil
+    end
+    if
+        buffer_state
+        and buffer_state.scope
+        and buffer_state.scope == node
+    then
+        return node
     end
 
     local excluded_node_types =

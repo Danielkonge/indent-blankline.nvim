@@ -192,7 +192,7 @@ M.refresh = function(bufnr)
     local scope_start_line
     local scope_end_line
     if not scope_disabled and config.scope.enabled then
-        scope = scp.get(bufnr, config)
+        scope = scp.get(bufnr, config, global_buffer_state[bufnr])
         if scope and scope:start() >= 0 then
             local scope_start = scope:start()
             local scope_end = scope:end_()
@@ -623,10 +623,11 @@ M.refresh = function(bufnr)
         if #virt_text > 0 then
             vim.api.nvim_buf_set_extmark(bufnr, namespace, row - 1, 0, {
                 virt_text = virt_text,
-                virt_text_pos = "overlay",
+                -- virt_text_pos = "overlay",
                 hl_mode = "combine",
                 priority = config.indent.priority,
                 strict = false,
+                virt_text_win_col = 0,
             })
         end
 
