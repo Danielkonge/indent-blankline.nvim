@@ -4,10 +4,11 @@ local M = {}
 
 ---@param win number
 ---@return table<number, number>
-M.get_cursor_range = function(win)
+---@return table<number, number>
+M.get_cursor_ranges = function(win)
     local pos = vim.api.nvim_win_get_cursor(win)
     local row, col = pos[1] - 1, pos[2]
-    return { row, 0, row, col }
+    return { row, 0, row, col }, { row, col, row, col }
 end
 
 --- Takes a language tree and a range, and returns the child language tree for that range
@@ -53,7 +54,7 @@ M.get = function(bufnr, config, buffer_state)
         win = 0
     end
 
-    local range = M.get_cursor_range(win)
+    local range, cursor_range = M.get_cursor_ranges(win)
     lang_tree = M.language_for_range(lang_tree, range, config)
     if not lang_tree then
         return nil
@@ -64,7 +65,7 @@ M.get = function(bufnr, config, buffer_state)
         return nil
     end
 
-    local node = lang_tree:named_node_for_range(range, { bufnr = bufnr })
+    local node = lang_tree:named_node_for_range(cursor_range, { bufnr = bufnr })
     if not node then
         return nil
     end
