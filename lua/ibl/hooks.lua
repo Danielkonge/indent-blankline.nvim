@@ -215,7 +215,7 @@ M.builtin = {
     end,
 
     ---@type ibl.hooks.cb.current_indent_highlight
-    current_indent_highlight_from_extmark = function(_, bufnr, current_indent, scope_index)
+    current_indent_highlight_from_extmark = function(_, bufnr, current_indent, current_indent_index)
         local config = conf.get_config(bufnr)
 
         return utils.highlight_from_extmark(
@@ -225,7 +225,7 @@ M.builtin = {
             -1,
             current_indent.end_row - 1,
             -1,
-            scope_index
+           current_indent_index
         )
     end,
 

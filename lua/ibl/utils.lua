@@ -334,6 +334,11 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
         return fallback_index
     end
 
+    local reverse_hls = {}
+    for i, hl in ipairs(highlight) do
+        reverse_hls[hl] = i
+    end
+
     local start_line = vim.api.nvim_buf_get_lines(bufnr, start_row, start_row + 1, false)
     local end_line = vim.api.nvim_buf_get_lines(bufnr, end_row, end_row + 1, false)
     local end_pos
@@ -341,38 +346,25 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
     local start_pos_col
     local end_pos_col
 
+    local function inspect_pos(pos)
+        return vim.api.nvim_buf_get_extmarks(bufnr, -1, pos, pos, {
+            type = "highlight",
+            details = true,
+        })
+    end
+
     if end_line[1] then
         local end_pos_find = #end_line[1] - 1
         local try_find = end_line[1]:find "%S"
         if try_find then
             end_pos_find = try_find - 1
         end
-        end_pos = vim.inspect_pos(bufnr, end_row, end_pos_find, {
-            extmarks = true,
-            syntax = false,
-            treesitter = false,
-            semantic_tokens = false,
-        })
-        end_pos_col = vim.inspect_pos(bufnr, end_row, end_col - 1, {
-            extmarks = true,
-            syntax = false,
-            treesitter = false,
-            semantic_tokens = false,
-        })
+        end_pos = inspect_pos { end_row, end_pos_find }
+        end_pos_col = inspect_pos { end_row, end_col - 1 }
     end
     if start_line[1] then
-        start_pos = vim.inspect_pos(bufnr, start_row, #start_line[1] - 1, {
-            extmarks = true,
-            syntax = false,
-            treesitter = false,
-            semantic_tokens = false,
-        })
-        start_pos_col = vim.inspect_pos(bufnr, start_row, start_col, {
-            extmarks = true,
-            syntax = false,
-            treesitter = false,
-            semantic_tokens = false,
-        })
+        start_pos = inspect_pos { start_row, #start_line[1] - 1 }
+        start_pos_col = inspect_pos { start_row, start_col }
     end
 
     if not end_pos and not start_pos then
@@ -386,37 +378,30 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
     -- end,
     -- where the last symbol will give you rainbow-delimiters highlights
     -- from the comma (nothing) and the last parenthesis (the wrong color)
-    for i, hl_group in ipairs(highlight) do
-        if end_pos_col then
-            for _, extmark in ipairs(end_pos_col.extmarks) do
-                if extmark.opts.hl_group == hl_group then
-                    return i
-                end
-            end
-        end
-        if start_pos_col then
-            for _, extmark in ipairs(start_pos_col.extmarks) do
-                if extmark.opts.hl_group == hl_group then
-                    return i
-                end
-            end
+    for _, extmark in ipairs(end_pos_col) do
+        local i = reverse_hls[extmark[4].hl_group]
+        if i ~= nil then
+            return i
         end
     end
-    -- For some languages the scope extends before or after the delimiters. Make an attempt to capture them anyway by looking at the first character of the last line, and the last character of the first line.
-    for i, hl_group in ipairs(highlight) do
-        if end_pos then
-            for _, extmark in ipairs(end_pos.extmarks) do
-                if extmark.opts.hl_group == hl_group then
-                    return i
-                end
-            end
+    for _, extmark in ipairs(start_pos_col) do
+        local i = reverse_hls[extmark[4].hl_group]
+        if i ~= nil then
+            return i
         end
-        if start_pos then
-            for _, extmark in ipairs(start_pos.extmarks) do
-                if extmark.opts.hl_group == hl_group then
-                    return i
-                end
-            end
+    end
+
+    -- For some languages the scope extends before or after the delimiters. Make an attempt to capture them anyway by looking at the first character of the last line, and the last character of the first line.
+    for _, extmark in ipairs(end_pos) do
+        local i = reverse_hls[extmark[4].hl_group]
+        if i ~= nil then
+            return i
+        end
+    end
+    for _, extmark in ipairs(start_pos) do
+        local i = reverse_hls[extmark[4].hl_group]
+        if i ~= nil then
+            return i
         end
     end
     return fallback_index
