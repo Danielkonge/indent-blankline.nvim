@@ -105,10 +105,15 @@ M.refresh_all = function()
     end
 end
 
+---@class ibl.debounced_refresh_object
+---@field timers table<number, uv_timer_t>
+---@field queued_buffers table<number, boolean>
+
 local debounced_refresh = setmetatable({
     timers = {},
     queued_buffers = {},
 }, {
+    ---@param self ibl.debounced_refresh_object
     ---@param bufnr number
     __call = function(self, bufnr)
         bufnr = utils.get_bufnr(bufnr)
