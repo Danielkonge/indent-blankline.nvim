@@ -71,7 +71,7 @@ M.get = function(bufnr, config, buffer_state)
     if
         buffer_state
         and buffer_state.scope
-        and buffer_state.scope == node
+        and buffer_state.scope:equal(node)
     then
         return node
     end
