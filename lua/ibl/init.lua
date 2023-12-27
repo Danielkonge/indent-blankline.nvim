@@ -633,6 +633,7 @@ M.refresh = function(bufnr)
                 priority = config.indent.priority,
                 strict = false,
                 virt_text_win_col = 0,
+                virt_text_repeat_linebreak = true,
             })
         end
 
