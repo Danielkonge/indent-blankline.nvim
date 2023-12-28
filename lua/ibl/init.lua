@@ -529,11 +529,31 @@ M.refresh = function(bufnr)
             scope_show_end_cond = #whitespace_tbl >= scope_col_start_single
         end
 
+        -- one line scopes
+        if
+            config.scope.enabled
+            and (
+                (config.scope.show_start and is_scope_start)
+                or (config.scope.show_end and is_scope_end)
+            )
+            and config.scope.show_exact_scope
+            and scope_row_start == scope_row_end
+        then
+            vim.api.nvim_buf_set_extmark(bufnr, namespace, row - 1, scope_col_start_draw, {
+                end_col = scope_col_end,
+                hl_group = scope_hl.underline,
+                priority = config.scope.priority,
+                strict = false,
+            })
+            inlay_hints.set(bufnr, row - 1, #whitespace, scope_hl.underline, scope_hl.underline)
+        end
+
         -- scope start
         if
             config.scope.enabled
             and config.scope.show_start
             and is_scope_start
+            and scope_row_start ~= scope_row_end
             and not (
                 current_indent_enabled
                 and config.current_indent.show_start
@@ -556,6 +576,7 @@ M.refresh = function(bufnr)
             and config.scope.show_end
             and is_scope_end
             and scope_show_end_cond
+            and scope_row_start ~= scope_row_end
             and not (
                 current_indent_enabled
                 and config.current_indent.show_end
