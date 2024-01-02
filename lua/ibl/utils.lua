@@ -378,13 +378,13 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
     -- end,
     -- where the last symbol will give you rainbow-delimiters highlights
     -- from the comma (nothing) and the last parenthesis (the wrong color)
-    for _, extmark in ipairs(end_pos_col) do
+    for _, extmark in ipairs(end_pos_col or {}) do
         local i = reverse_hls[extmark[4].hl_group]
         if i ~= nil then
             return i
         end
     end
-    for _, extmark in ipairs(start_pos_col) do
+    for _, extmark in ipairs(start_pos_col or {}) do
         local i = reverse_hls[extmark[4].hl_group]
         if i ~= nil then
             return i
@@ -392,13 +392,13 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
     end
 
     -- For some languages the scope extends before or after the delimiters. Make an attempt to capture them anyway by looking at the first character of the last line, and the last character of the first line.
-    for _, extmark in ipairs(end_pos) do
+    for _, extmark in ipairs(end_pos or {}) do
         local i = reverse_hls[extmark[4].hl_group]
         if i ~= nil then
             return i
         end
     end
-    for _, extmark in ipairs(start_pos) do
+    for _, extmark in ipairs(start_pos or {}) do
         local i = reverse_hls[extmark[4].hl_group]
         if i ~= nil then
             return i
