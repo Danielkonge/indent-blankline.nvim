@@ -490,7 +490,7 @@ local M = {
         catch_statement = true,
     },
     starlark = {
-        module = true,
+        -- module = true,
         function_definition = true,
         dictionary_comprehension = true,
         list_comprehension = true,
@@ -618,7 +618,7 @@ local M = {
         block = true,
     },
     yaml = {
-        stream = true,
+        -- stream = true,
         block_node = true,
     },
     yuck = {
