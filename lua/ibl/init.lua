@@ -417,7 +417,7 @@ M.refresh = function(bufnr)
             current_indent_col_start_single = #current_indent_whitespace_tbl
 
             for j = indent_state and #indent_state.stack or 0, 1, -1 do
-                current_indent.start_row = indent_state.stack[j].row + 1
+                current_indent.start_row = not blankline and indent_state.stack[j].row + 1 or current_indent.start_row
                 if indent_state.stack[j].indent <= current_indent_col_start_single then
                     break
                 end
@@ -649,11 +649,11 @@ M.refresh = function(bufnr)
         if #virt_text > 0 then
             vim.api.nvim_buf_set_extmark(bufnr, namespace, row - 1, 0, {
                 virt_text = virt_text,
-                -- virt_text_pos = "overlay",
+                virt_text_pos = "overlay",
                 hl_mode = "combine",
                 priority = config.indent.priority,
                 strict = false,
-                virt_text_win_col = 0,
+                -- virt_text_win_col = 0,
                 virt_text_repeat_linebreak = true,
             })
         end
