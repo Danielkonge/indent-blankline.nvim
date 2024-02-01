@@ -417,7 +417,8 @@ M.refresh = function(bufnr)
             current_indent_col_start_single = #current_indent_whitespace_tbl
 
             for j = indent_state and #indent_state.stack or 0, 1, -1 do
-                current_indent.start_row = not blankline and indent_state.stack[j].row + 1 or current_indent.start_row
+                current_indent.start_row = indent_state.stack[j].row + (blankline and 0 or 1)
+                -- current_indent.start_row = indent_state.stack[j].row + 1
                 if indent_state.stack[j].indent <= current_indent_col_start_single then
                     break
                 end
