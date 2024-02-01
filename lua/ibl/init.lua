@@ -349,7 +349,7 @@ M.refresh = function(bufnr)
                 end
 
                 local j_whitespace = utils.get_whitespace(lines[j])
-                whitespace_tbl, indent_state = indent.get(j_whitespace, indent_opts, indent_state, row)
+                whitespace_tbl, indent_state = indent.get(j_whitespace, indent_opts, indent_state, row, true)
 
                 if current_indent_enabled and row > lnum and current_indent.end_row > row then
                     if current_indent_col_start_single >= #whitespace_tbl then
@@ -417,8 +417,7 @@ M.refresh = function(bufnr)
             current_indent_col_start_single = #current_indent_whitespace_tbl
 
             for j = indent_state and #indent_state.stack or 0, 1, -1 do
-                current_indent.start_row = indent_state.stack[j].row + (blankline and 0 or 1)
-                -- current_indent.start_row = indent_state.stack[j].row + 1
+                current_indent.start_row = indent_state.stack[j].row + 1
                 if indent_state.stack[j].indent <= current_indent_col_start_single then
                     break
                 end

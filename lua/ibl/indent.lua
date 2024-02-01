@@ -31,8 +31,9 @@ M.whitespace = {
 ---@param opts ibl.indent_options
 ---@param indent_state ibl.indent_state?
 ---@param row number
+---@param is_j_whitespace boolean?
 ---@return ibl.indent.whitespace[], ibl.indent_state
-M.get = function(whitespace, opts, indent_state, row)
+M.get = function(whitespace, opts, indent_state, row, is_j_whitespace)
     if not indent_state then
         indent_state = { cap = false, stack = {} }
     end
@@ -103,11 +104,14 @@ M.get = function(whitespace, opts, indent_state, row)
         end
     end
 
+    -- don't change the stack for j_whitespace unless there is no indent
     local indent = spaces + tabs
-    indent_state.stack = utils.tbl_filter(function(a)
-        return a.indent < indent
-    end, indent_state.stack)
-    table.insert(indent_state.stack, { indent = indent, row = row })
+    if not is_j_whitespace or indent == 0 then
+        indent_state.stack = utils.tbl_filter(function(a)
+            return a.indent < indent
+        end, indent_state.stack)
+        table.insert(indent_state.stack, { indent = indent, row = row })
+    end
 
     return whitespace_tbl, indent_state
 end
