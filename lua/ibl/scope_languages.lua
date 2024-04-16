@@ -623,6 +623,7 @@ local M = {
     yaml = {
         -- stream = true,
         block_node = true,
+        block_mapping_pair = true,
     },
     yuck = {
         ast_block = true,
