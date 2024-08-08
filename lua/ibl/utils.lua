@@ -115,16 +115,16 @@ M.encode = function(input)
     return (
         input
         and input
-            :gsub("\\x%x%x", function(hex)
-                return string.char(tonumber(hex:sub(3, 4), 16))
-            end)
-            :gsub("\\u%x%x%x%x", function(hex)
-                return M.utf8_encode(tonumber(hex:sub(3, 6), 16))
-            end)
-            :gsub("\\U%x%x%x%x%x%x%x%x", function(hex)
-                -- Note: This won't work for characters outside the range Lua's string can handle.
-                return M.utf8_encode(tonumber(hex:sub(3, 10), 16))
-            end)
+        :gsub("\\x%x%x", function(hex)
+            return string.char(tonumber(hex:sub(3, 4), 16))
+        end)
+        :gsub("\\u%x%x%x%x", function(hex)
+            return M.utf8_encode(tonumber(hex:sub(3, 6), 16))
+        end)
+        :gsub("\\U%x%x%x%x%x%x%x%x", function(hex)
+            -- Note: This won't work for characters outside the range Lua's string can handle.
+            return M.utf8_encode(tonumber(hex:sub(3, 10), 16))
+        end)
     )
 end
 
@@ -378,20 +378,22 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
     -- end,
     -- where the last symbol will give you rainbow-delimiters highlights
     -- from the comma (nothing) and the last parenthesis (the wrong color)
-    for _, extmark in ipairs(end_pos_col or {}) do
-        local i = reverse_hls[extmark[4].hl_group]
-        if i ~= nil then
-            return i
-        end
-    end
     for _, extmark in ipairs(start_pos_col or {}) do
         local i = reverse_hls[extmark[4].hl_group]
         if i ~= nil then
             return i
         end
     end
+    for _, extmark in ipairs(end_pos_col or {}) do
+        local i = reverse_hls[extmark[4].hl_group]
+        if i ~= nil then
+            return i
+        end
+    end
 
-    -- For some languages the scope extends before or after the delimiters. Make an attempt to capture them anyway by looking at the first character of the last line, and the last character of the first line.
+    -- For some languages the scope extends before or after the delimiters.
+    -- Make an attempt to capture them anyway by looking at the first character of the last line,
+    -- and the last character of the first line.
     for _, extmark in ipairs(end_pos or {}) do
         local i = reverse_hls[extmark[4].hl_group]
         if i ~= nil then

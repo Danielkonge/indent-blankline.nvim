@@ -286,7 +286,10 @@ M.refresh = function(bufnr)
     local line_skipped = {}
     ---@type ibl.hooks.cb.skip_line[]
     local skip_line_hooks = hooks.get(bufnr, hooks.type.SKIP_LINE)
-    for i, line in ipairs(lines) do
+
+    local line_num = #lines
+    for i = 1, line_num do
+        local line = lines[i]
         local row = i + offset
         for _, fn in pairs(skip_line_hooks) do
             if fn(buffer_state.tick, bufnr, row - 1, line) then
@@ -298,7 +301,8 @@ M.refresh = function(bufnr)
 
     --- Calc loop ---
     local calc_data = {}
-    for i, line in ipairs(lines) do
+    for i = 1, line_num do
+        local line = lines[i]
         local row = i + offset
         if line_skipped[i] then
             goto continue_calc
@@ -337,7 +341,7 @@ M.refresh = function(bufnr)
             empty_line_counter = empty_line_counter - 1
             whitespace_tbl = next_whitespace_tbl
         else
-            if i == #lines then
+            if i == line_num then
                 whitespace_tbl, indent_state = indent.get(whitespace, indent_opts, indent_state, row)
             else
                 local j = i + 1
@@ -360,7 +364,7 @@ M.refresh = function(bufnr)
                 if utils.has_end(lines[j]) then
                     local trail
                     local trail_whitespace
-                    if indent_state.stack then
+                    if indent_state.stack and indent_state.stack[#indent_state.stack] then
                         trail = last_whitespace_tbl[indent_state.stack[#indent_state.stack].indent + 1] or nil
                         trail_whitespace = last_whitespace_tbl[indent_state.stack[#indent_state.stack].indent]
                     end
@@ -487,7 +491,8 @@ M.refresh = function(bufnr)
     end
 
     --- Draw loop ---
-    for i, line in ipairs(lines) do
+    for i = 1, line_num do
+        local line = lines[i]
         local row = i + offset
         if line_skipped[i] then
             vt.clear_buffer(bufnr, row)
