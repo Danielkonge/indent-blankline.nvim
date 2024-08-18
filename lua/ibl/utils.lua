@@ -20,6 +20,97 @@ M.validate = function(opt, input, path)
     end
 end
 
+--- copy of vim.spit without vim.validate
+---
+---@param s string String to split
+---@param sep string Separator or pattern
+---@param opts (table|nil) Keyword arguments |kwargs| accepted by |vim.gsplit()|
+---@return string[] List of split components
+function M.split(s, sep, opts)
+    local t = {}
+    for c in M.gsplit(s, sep, opts) do
+        table.insert(t, c)
+    end
+    return t
+end
+
+--- copy of vim.gsplit without vim.validate
+---
+--- @param s string String to split
+--- @param sep string Separator or pattern
+--- @param opts (table|nil) Keyword arguments |kwargs|:
+---       - plain: (boolean) Use `sep` literally (as in string.find).
+---       - trimempty: (boolean) Discard empty segments at start and end of the sequence.
+---@return fun():string|nil (function) Iterator over the split components
+function M.gsplit(s, sep, opts)
+    local plain
+    local trimempty = false
+    if type(opts) == "boolean" then
+        plain = opts -- For backwards compatibility.
+    else
+        opts = opts or {}
+        plain, trimempty = opts.plain, opts.trimempty
+    end
+
+    local start = 1
+    local done = false
+
+    -- For `trimempty`: queue of collected segments, to be emitted at next pass.
+    local segs = {}
+    local empty_start = true -- Only empty segments seen so far.
+
+    local function _pass(i, j, ...)
+        if i then
+            assert(j + 1 > start, "Infinite loop detected")
+            local seg = s:sub(start, i - 1)
+            start = j + 1
+            return seg, ...
+        else
+            done = true
+            return s:sub(start)
+        end
+    end
+
+    return function()
+        if trimempty and #segs > 0 then
+            -- trimempty: Pop the collected segments.
+            return table.remove(segs)
+        elseif done or (s == "" and sep == "") then
+            return nil
+        elseif sep == "" then
+            if start == #s then
+                done = true
+            end
+            return _pass(start + 1, start)
+        end
+
+        local seg = _pass(s:find(sep, start, plain))
+
+        -- Trim empty segments from start/end.
+        if trimempty and seg ~= "" then
+            empty_start = false
+        elseif trimempty and seg == "" then
+            while not done and seg == "" do
+                table.insert(segs, 1, "")
+                seg = _pass(s:find(sep, start, plain))
+            end
+            if done and seg == "" then
+                return nil
+            elseif empty_start then
+                empty_start = false
+                segs = {}
+                return seg
+            end
+            if seg ~= "" then
+                table.insert(segs, 1, seg)
+            end
+            return table.remove(segs)
+        end
+
+        return seg
+    end
+end
+
 --- copy of vim.tbl_contains without vim.validate
 ---
 ---@param t table Table to check
@@ -169,8 +260,8 @@ M.get_listchars = function(bufnr)
             if list then
                 local raw_value = vim.api.nvim_get_option_value("listchars", { win = win })
                 listchars = {}
-                for _, key_value_str in ipairs(vim.split(raw_value, ",")) do
-                    local key, value = unpack(vim.split(key_value_str, ":"))
+                for _, key_value_str in ipairs(M.split(raw_value, ",")) do
+                    local key, value = unpack(M.split(key_value_str, ":"))
                     listchars[vim.trim(key)] = value
                 end
             end
@@ -226,7 +317,7 @@ M.get_filetypes = function(bufnr)
     if filetype == "" then
         return { "" }
     end
-    return vim.split(filetype, ".", { plain = true, trimempty = true })
+    return M.split(filetype, ".", { plain = true, trimempty = true })
 end
 
 local has_end_reg = vim.regex "^\\s*\\(}\\|]\\|)\\|end\\)"
@@ -312,11 +403,7 @@ end
 ---@vararg T
 ---@return T
 M.tbl_join = function(...)
-    local result = {}
-    for i, v in ipairs(vim.tbl_flatten { ... }) do
-        result[i] = v
-    end
-    return result
+    return vim.iter({ ... }):flatten():totable()
 end
 
 ---@generic T
@@ -407,6 +494,19 @@ M.highlight_from_extmark = function(bufnr, config, start_row, start_col, end_row
         end
     end
     return fallback_index
+end
+
+---@param bufnr number
+---@return boolean
+M.has_empty_foldtext = function(bufnr)
+    if vim.fn.has "nvim-0.10" == 0 then
+        return false
+    end
+    local win = M.get_win(bufnr)
+    if not win then
+        return false
+    end
+    return vim.api.nvim_get_option_value("foldtext", { win = win }) == ""
 end
 
 M.quickclone = function(tbl)

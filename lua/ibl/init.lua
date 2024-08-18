@@ -223,6 +223,8 @@ M.refresh = function(bufnr)
         indent_opts.vartabstop = ""
     end
 
+    local has_empty_foldtext = utils.has_empty_foldtext(bufnr)
+
     local indent_state
     local next_whitespace_tbl = {}
     local empty_line_counter = 0
@@ -310,10 +312,10 @@ M.refresh = function(bufnr)
 
         local whitespace = utils.get_whitespace(line)
         local foldclosed = vim.fn.foldclosed(row)
-        if is_current_buffer and foldclosed == row then
+        if is_current_buffer and foldclosed == row and not has_empty_foldtext then
             local foldtext = vim.fn.foldtextresult(row)
             local foldtext_whitespace = utils.get_whitespace(foldtext)
-            if vim.fn.strdisplaywidth(foldtext_whitespace, 0) < vim.fn.strdisplaywidth(whitespace, 0) then
+            if vim.fn.strwidth(foldtext_whitespace) < vim.fn.strwidth(whitespace) then
                 line_skipped[i] = true
                 goto continue_calc
             end

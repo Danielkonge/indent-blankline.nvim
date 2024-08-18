@@ -48,7 +48,7 @@ M.get = function(whitespace, opts, indent_state, row, is_j_whitespace)
         indent_cap = indent_state.stack[1] and indent_state.stack[1].indent or 0
         indent_state.cap = false
     end
-    local varts = utils.tbl_map(tonumber, vim.split(vartabstop, ",", { trimempty = true }))
+    local varts = utils.tbl_map(tonumber, utils.split(vartabstop, ",", { trimempty = true }))
     if shiftwidth == 0 then
         shiftwidth = tabstop
     end
@@ -79,6 +79,7 @@ M.get = function(whitespace, opts, indent_state, row, is_j_whitespace)
                     table.insert(whitespace_tbl, M.whitespace.TAB_FILL)
                 end
             end
+            spaces = 0
         else
             local mod = (spaces + tabs + extra) % shiftwidth
             if

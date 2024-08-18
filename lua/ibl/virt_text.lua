@@ -94,7 +94,7 @@ M.get = function(
 
         if indent.is_indent(ws) then
             whitespace_hl = utils.tbl_get_index(highlights.whitespace, indent_index).char
-            if vim.fn.strdisplaywidth(char) == 0 then
+            if vim.fn.strwidth(char) == 0 then
                 char = char_map[whitespace.SPACE] --[[@as string]]
                 sa = false
                 cia = false
@@ -120,7 +120,7 @@ M.get = function(
 
                 if config.current_indent.char then
                     local current_indent_char = get_char(config.current_indent.char, current_indent_index)
-                    if vim.fn.strdisplaywidth(current_indent_char) == 1 then
+                    if vim.fn.strwidth(current_indent_char) == 1 then
                         char = current_indent_char
                     else
                         char = indent_char
@@ -146,7 +146,7 @@ M.get = function(
 
                 if config.scope.char then
                     local scope_char = get_char(config.scope.char, scope_index)
-                    if vim.fn.strdisplaywidth(scope_char) == 1 then
+                    if vim.fn.strwidth(scope_char) == 1 then
                         char = scope_char
                     else
                         char = indent_char
